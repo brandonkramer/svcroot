@@ -4,6 +4,8 @@ Service instance roots, runtime file layout, project-root discovery, and known-i
 
 ## Install
 
+From [pkg.go.dev](https://pkg.go.dev/github.com/brandonkramer/svcroot):
+
 ```bash
 go get github.com/brandonkramer/svcroot
 ```
