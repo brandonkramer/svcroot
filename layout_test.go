@@ -85,8 +85,6 @@ func TestResolveHome(t *testing.T) {
 }
 
 func TestFindProjectRoot(t *testing.T) {
-	t.Parallel()
-
 	base := t.TempDir()
 	project := filepath.Join(base, "repo", ".svc")
 	if err := os.MkdirAll(project, 0o755); err != nil {

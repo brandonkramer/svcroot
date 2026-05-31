@@ -10,9 +10,11 @@ import (
 // project root discovery.
 //
 
+var projectPathAbs = filepath.Abs
+
 // FindProjectRoot walks upward from from to find markerDir as a subdirectory.
 func FindProjectRoot(from, markerDir string) (string, bool) {
-	dir, err := filepath.Abs(from)
+	dir, err := projectPathAbs(from)
 	if err != nil {
 		return "", false
 	}

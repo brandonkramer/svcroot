@@ -20,9 +20,11 @@ func ResolveHome(envVar, defaultDirName string) (string, error) {
 	return DefaultHomeDir(defaultDirName)
 }
 
+var userHomeDir = os.UserHomeDir
+
 // DefaultHomeDir returns ~/.defaultDirName under the user home directory.
 func DefaultHomeDir(defaultDirName string) (string, error) {
-	userHome, err := os.UserHomeDir()
+	userHome, err := userHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("svcroot: resolve user home: %w", err)
 	}

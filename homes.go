@@ -15,6 +15,11 @@ import (
 // known-instance registry.
 //
 
+var (
+	pathAbs              = filepath.Abs
+	registryDataMkdirAll = os.MkdirAll
+)
+
 // HomeEntry records one known service root.
 type HomeEntry struct {
 	// Path is the absolute service root directory.
@@ -40,7 +45,7 @@ func LoadKnownHomes(path string) KnownHomes {
 
 // RegisterKnownHome records root in the registry at registryPath.
 func RegisterKnownHome(registryPath, home, now string) error {
-	abs, err := filepath.Abs(home)
+	abs, err := pathAbs(home)
 	if err != nil {
 		return fmt.Errorf("svcroot: resolve home path: %w", err)
 	}
@@ -48,7 +53,7 @@ func RegisterKnownHome(registryPath, home, now string) error {
 		return fmt.Errorf("svcroot: resolve home path: %w", ErrEmptyHome)
 	}
 	err = withRegistryLock(registryPath, func() error {
-		if err := os.MkdirAll(filepath.Dir(registryPath), 0o755); err != nil {
+		if err := registryDataMkdirAll(filepath.Dir(registryPath), 0o755); err != nil {
 			return fmt.Errorf("svcroot: create registry dir: %w", err)
 		}
 		file := LoadKnownHomes(registryPath)
@@ -84,7 +89,7 @@ func CandidateHomes(registryPath, envVar, envHome, defaultHome string) ([]string
 		if home == "" {
 			return
 		}
-		abs, err := filepath.Abs(home)
+		abs, err := pathAbs(home)
 		if err != nil {
 			return
 		}

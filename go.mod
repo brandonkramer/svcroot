@@ -2,6 +2,8 @@ module github.com/brandonkramer/svcroot
 
 go 1.26.3
 
+toolchain go1.26.3
+
 require (
 	github.com/brandonkramer/jsonfile v0.1.0
 	golang.org/x/sys v0.43.0
