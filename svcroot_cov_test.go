@@ -98,22 +98,19 @@ type registryLockStub struct {
 
 func stubRegistryLock(t *testing.T, cfg registryLockStub) {
 	t.Helper()
-	oldMkdir := registryMkdirAll
-	oldOpen := registryOpenFile
-	oldFlock := registryFlock
-	t.Cleanup(func() {
-		registryMkdirAll = oldMkdir
-		registryOpenFile = oldOpen
-		registryFlock = oldFlock
-	})
-	if cfg.mkdirErr != nil {
-		registryMkdirAll = func(string, os.FileMode) error { return cfg.mkdirErr }
-	}
-	if cfg.openErr != nil {
-		registryOpenFile = func(string) (*os.File, error) { return nil, cfg.openErr }
-	}
-	if cfg.flockErr != nil {
-		registryFlock = func(int, int) error { return cfg.flockErr }
+	old := registryWithLock
+	t.Cleanup(func() { registryWithLock = old })
+	registryWithLock = func(path string, fn func() error) error {
+		if cfg.mkdirErr != nil {
+			return cfg.mkdirErr
+		}
+		if cfg.openErr != nil {
+			return cfg.openErr
+		}
+		if cfg.flockErr != nil {
+			return cfg.flockErr
+		}
+		return old(path, fn)
 	}
 }
 

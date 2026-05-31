@@ -116,6 +116,8 @@ github.com/bombsimon/wsl/v4 v4.7.0 h1:1Ilm9JBPRczjyUs6hvOPKvd7VL1Q++PL8M0SXBDf+j
 github.com/bombsimon/wsl/v4 v4.7.0/go.mod h1:uV/+6BkffuzSAVYD+yGyld1AChO7/EuLrCF/8xTiapg=
 github.com/bombsimon/wsl/v5 v5.8.0 h1:JTkyfs4yl8SPejrCF2GdABXE+mO1WvM7iUYzRWlsxDs=
 github.com/bombsimon/wsl/v5 v5.8.0/go.mod h1:AbOLsulgkqP4ZnitHf9gwPtCOGlrzkk0jb0uNxRSY0o=
+github.com/brandonkramer/filelock v0.1.0 h1:xJSl6m4jg7V03F2frZ+XbbRcTRv/+FnKl3SjonQhsSQ=
+github.com/brandonkramer/filelock v0.1.0/go.mod h1:9yMwEj4KdQvKDvUpKArOctKYAkACqTlV4tofMVHPq9o=
 github.com/brandonkramer/jsonfile v0.1.0 h1:a65VKR9okLjwiIdsBd95blQ7YQ1K7U4b1OCG2g6d/Is=
 github.com/brandonkramer/jsonfile v0.1.0/go.mod h1:pLGl+RjNkCjh+aa4+NI2HYo4NpEv1qipkbVw5JX0Db0=
 github.com/breml/bidichk v0.3.3 h1:WSM67ztRusf1sMoqH6/c4OBCUlRVTKq+CbSeo0R17sE=
