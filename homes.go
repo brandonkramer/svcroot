@@ -1,0 +1,105 @@
+package svcroot
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+
+	"github.com/brandonkramer/jsonfile"
+)
+
+//
+// ────────────────────────────────────────
+// known-home registry.
+//
+
+// HomeEntry records one known service home.
+type HomeEntry struct {
+	Path     string `json:"path"`
+	LastSeen string `json:"last_seen,omitempty"`
+}
+
+// KnownHomes is the on-disk known-homes registry.
+type KnownHomes struct {
+	Homes []HomeEntry `json:"homes"`
+}
+
+// LoadKnownHomes reads the registry at path, returning an empty file when missing.
+func LoadKnownHomes(path string) KnownHomes {
+	file, err := jsonfile.Read[KnownHomes](path)
+	if err != nil {
+		return KnownHomes{}
+	}
+	return file
+}
+
+// RegisterKnownHome records home in the registry at registryPath.
+func RegisterKnownHome(registryPath, home, now string) error {
+	abs, err := filepath.Abs(home)
+	if err != nil {
+		return fmt.Errorf("svcroot: resolve home path: %w", err)
+	}
+	if abs == "" {
+		return fmt.Errorf("svcroot: resolve home path: %w", ErrEmptyHome)
+	}
+	err = withRegistryLock(registryPath, func() error {
+		if err := os.MkdirAll(filepath.Dir(registryPath), 0o755); err != nil {
+			return fmt.Errorf("svcroot: create registry dir: %w", err)
+		}
+		file := LoadKnownHomes(registryPath)
+		found := false
+		for i := range file.Homes {
+			if file.Homes[i].Path == abs {
+				file.Homes[i].LastSeen = now
+				found = true
+				break
+			}
+		}
+		if !found {
+			file.Homes = append(file.Homes, HomeEntry{Path: abs, LastSeen: now})
+		}
+		sort.Slice(file.Homes, func(i, j int) bool { return file.Homes[i].Path < file.Homes[j].Path })
+		if err := jsonfile.Write(registryPath, file); err != nil {
+			return fmt.Errorf("svcroot: write registry %s: %w", registryPath, err)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("svcroot: register known home %s: %w", registryPath, err)
+	}
+	return nil
+}
+
+// CandidateHomes returns deduplicated homes from envVar, envHome, defaultHome, and the registry file.
+func CandidateHomes(registryPath, envVar, envHome, defaultHome string) ([]string, error) {
+	seen := map[string]struct{}{}
+	var out []string
+	add := func(home string) {
+		home = strings.TrimSpace(home)
+		if home == "" {
+			return
+		}
+		abs, err := filepath.Abs(home)
+		if err != nil {
+			return
+		}
+		if _, ok := seen[abs]; ok {
+			return
+		}
+		seen[abs] = struct{}{}
+		out = append(out, abs)
+	}
+	if envHome != "" {
+		add(envHome)
+	} else if envVar != "" {
+		add(os.Getenv(envVar))
+	}
+	add(defaultHome)
+	for _, entry := range LoadKnownHomes(registryPath).Homes {
+		add(entry.Path)
+	}
+	sort.Strings(out)
+	return out, nil
+}
