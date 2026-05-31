@@ -35,6 +35,7 @@ linters:
         - ^[ ]*go:build
         - ^[ ]*go:generate
         - ^[ ]*go:embed
+        - ^(layout paths|root resolution|root path helpers|known-instance registry|project root discovery|registry locking \(unix\)|registry locking \(windows\)|service configuration|sentinel errors)$
       capital: true
       period: true
     nolintlint:

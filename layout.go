@@ -7,13 +7,18 @@ import "path/filepath"
 // layout paths.
 //
 
-// Layout names runtime files under a service home directory.
+// Layout names runtime files under a service root directory.
 type Layout struct {
-	SessionsDir       string
-	SocketName        string
+	// SessionsDir is the runtime state directory name under the service root.
+	SessionsDir string
+	// SocketName is the primary RPC socket file name inside SessionsDir.
+	SocketName string
+	// ObserveSocketName is the observe socket file name; leave empty to disable.
 	ObserveSocketName string
-	LockName          string
-	PipePrefix        string
+	// LockName is the service lock file name inside SessionsDir.
+	LockName string
+	// PipePrefix is the Windows named-pipe prefix; leave empty to disable.
+	PipePrefix string
 }
 
 const (
@@ -65,28 +70,28 @@ func withDefaults(l *Layout) Layout {
 	return v
 }
 
-// Sessions returns home/sessions (or the configured sessions dir).
-func Sessions(home string, layout *Layout) string {
+// Sessions returns root joined with the configured runtime directory.
+func Sessions(root string, layout *Layout) string {
 	l := withCoreDefaults(layout)
-	return filepath.Join(home, l.SessionsDir)
+	return filepath.Join(root, l.SessionsDir)
 }
 
-// Socket returns the Unix domain socket path for home.
-func Socket(home string, layout *Layout) string {
+// Socket returns the Unix domain socket path under root.
+func Socket(root string, layout *Layout) string {
 	l := withCoreDefaults(layout)
-	return filepath.Join(home, l.SessionsDir, l.SocketName)
+	return filepath.Join(root, l.SessionsDir, l.SocketName)
 }
 
-// Lock returns the lock file path for home.
-func Lock(home string, layout *Layout) string {
+// Lock returns the lock file path under root.
+func Lock(root string, layout *Layout) string {
 	l := withCoreDefaults(layout)
-	return filepath.Join(home, l.SessionsDir, l.LockName)
+	return filepath.Join(root, l.SessionsDir, l.LockName)
 }
 
-// ObserveSocket returns the read-only observe HTTP socket path for home.
-func ObserveSocket(home string, layout *Layout) string {
+// ObserveSocket returns the read-only observe HTTP socket path under root.
+func ObserveSocket(root string, layout *Layout) string {
 	l := withDefaults(layout)
-	return filepath.Join(home, l.SessionsDir, l.ObserveSocketName)
+	return filepath.Join(root, l.SessionsDir, l.ObserveSocketName)
 }
 
 // WithDefaults returns layout with empty core fields filled from DefaultLayout.
@@ -97,16 +102,16 @@ func (l *Layout) WithDefaults() Layout {
 	return withDefaults(l)
 }
 
-// RuntimeDir returns home joined with the runtime directory name.
-func (l *Layout) RuntimeDir(home string) string {
-	return Sessions(home, l)
+// RuntimeDir returns root joined with the runtime directory name.
+func (l *Layout) RuntimeDir(root string) string {
+	return Sessions(root, l)
 }
 
-// At joins path elements under home. When underRuntime is true, the runtime directory is inserted first.
-func (l *Layout) At(home string, underRuntime bool, elem ...string) string {
-	base := home
+// At joins path elements under root. When underRuntime is true, the runtime directory is inserted first.
+func (l *Layout) At(root string, underRuntime bool, elem ...string) string {
+	base := root
 	if underRuntime {
-		base = Sessions(home, l)
+		base = Sessions(root, l)
 	}
 	if len(elem) == 0 {
 		return base
@@ -115,12 +120,12 @@ func (l *Layout) At(home string, underRuntime bool, elem ...string) string {
 }
 
 // ObserveSocketPath returns the observe socket path when ObserveSocketName is set.
-func (l *Layout) ObserveSocketPath(home string) (string, bool) {
+func (l *Layout) ObserveSocketPath(root string) (string, bool) {
 	if l == nil || l.ObserveSocketName == "" {
 		return "", false
 	}
 	core := withCoreDefaults(l)
-	return filepath.Join(home, core.SessionsDir, l.ObserveSocketName), true
+	return filepath.Join(root, core.SessionsDir, l.ObserveSocketName), true
 }
 
 // PipePrefixName returns the configured Windows pipe prefix when set.

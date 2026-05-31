@@ -12,17 +12,20 @@ import (
 
 //
 // ────────────────────────────────────────
-// known-home registry.
+// known-instance registry.
 //
 
-// HomeEntry records one known service home.
+// HomeEntry records one known service root.
 type HomeEntry struct {
-	Path     string `json:"path"`
+	// Path is the absolute service root directory.
+	Path string `json:"path"`
+	// LastSeen is an optional RFC3339 timestamp from the last registration.
 	LastSeen string `json:"last_seen,omitempty"`
 }
 
-// KnownHomes is the on-disk known-homes registry.
+// KnownHomes is the on-disk known-instance registry.
 type KnownHomes struct {
+	// Homes lists previously registered service roots.
 	Homes []HomeEntry `json:"homes"`
 }
 
@@ -35,7 +38,7 @@ func LoadKnownHomes(path string) KnownHomes {
 	return file
 }
 
-// RegisterKnownHome records home in the registry at registryPath.
+// RegisterKnownHome records root in the registry at registryPath.
 func RegisterKnownHome(registryPath, home, now string) error {
 	abs, err := filepath.Abs(home)
 	if err != nil {
@@ -72,7 +75,7 @@ func RegisterKnownHome(registryPath, home, now string) error {
 	return nil
 }
 
-// CandidateHomes returns deduplicated homes from envVar, envHome, defaultHome, and the registry file.
+// CandidateHomes returns deduplicated service roots from envVar, envHome, defaultHome, and the registry file.
 func CandidateHomes(registryPath, envVar, envHome, defaultHome string) ([]string, error) {
 	seen := map[string]struct{}{}
 	var out []string

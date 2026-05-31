@@ -9,7 +9,7 @@ import (
 
 //
 // ────────────────────────────────────────
-// home resolution.
+// root resolution.
 //
 
 // ResolveHome returns the envVar value when set, otherwise ~/.defaultDirName.
@@ -20,7 +20,7 @@ func ResolveHome(envVar, defaultDirName string) (string, error) {
 	return DefaultHomeDir(defaultDirName)
 }
 
-// DefaultHomeDir returns ~/.defaultDirName regardless of environment variables.
+// DefaultHomeDir returns ~/.defaultDirName under the user home directory.
 func DefaultHomeDir(defaultDirName string) (string, error) {
 	userHome, err := os.UserHomeDir()
 	if err != nil {

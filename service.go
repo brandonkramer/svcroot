@@ -10,20 +10,21 @@ import (
 // service configuration.
 //
 
-// Service describes how one long-running service resolves its home directory,
-// lays out runtime files, and optionally tracks known homes on disk.
+// Service describes how one long-running service resolves its root directory,
+// lays out runtime files, and optionally tracks known instances on disk.
 type Service struct {
 	// EnvVar overrides DefaultDir when set in the process environment.
 	EnvVar string
 	// DefaultDir is appended to the user home when EnvVar is unset (e.g. ".myapp").
 	DefaultDir string
-	Layout     Layout
-	// RegistryFile is joined with DefaultHome() for known-home registry paths.
-	// Leave empty when the service does not persist known homes.
+	// Layout names runtime files under each service root.
+	Layout Layout
+	// RegistryFile is joined with DefaultHome() for known-instance registry paths.
+	// Leave empty when the service does not persist known instances.
 	RegistryFile string
 }
 
-// Resolve returns the configured home directory for this service.
+// Resolve returns the configured service root directory.
 func (s *Service) Resolve() (string, error) {
 	return ResolveHome(s.EnvVar, s.DefaultDir)
 }
@@ -33,13 +34,13 @@ func (s *Service) DefaultHome() (string, error) {
 	return DefaultHomeDir(s.DefaultDir)
 }
 
-// Open returns path helpers for an explicit home root.
-func (s *Service) Open(home string) *Home {
+// Open returns path helpers for an explicit service root.
+func (s *Service) Open(root string) *Home {
 	layout := s.Layout
-	return &Home{root: home, layout: &layout}
+	return &Home{root: root, layout: &layout}
 }
 
-// RegistryPath returns the absolute known-homes registry path, or ("", nil) when unset.
+// RegistryPath returns the absolute known-instance registry path, or ("", nil) when unset.
 func (s *Service) RegistryPath() (string, error) {
 	if s.RegistryFile == "" {
 		return "", nil
@@ -51,8 +52,8 @@ func (s *Service) RegistryPath() (string, error) {
 	return filepath.Join(home, s.RegistryFile), nil
 }
 
-// Register records home in this service's known-homes registry.
-func (s *Service) Register(home, seenAt string) error {
+// Register records root in this service's known-instance registry.
+func (s *Service) Register(root, seenAt string) error {
 	path, err := s.RegistryPath()
 	if err != nil {
 		return err
@@ -60,11 +61,11 @@ func (s *Service) Register(home, seenAt string) error {
 	if path == "" {
 		return fmt.Errorf("svcroot: register home: %w", ErrRegistryNotConfigured)
 	}
-	return RegisterKnownHome(path, home, seenAt)
+	return RegisterKnownHome(path, root, seenAt)
 }
 
-// Candidates returns deduplicated homes from explicitHome, EnvVar, DefaultHome, and the registry.
-func (s *Service) Candidates(explicitHome string) ([]string, error) {
+// Candidates returns deduplicated service roots from explicitRoot, EnvVar, DefaultHome, and the registry.
+func (s *Service) Candidates(explicitRoot string) ([]string, error) {
 	path, err := s.RegistryPath()
 	if err != nil {
 		return nil, err
@@ -73,5 +74,5 @@ func (s *Service) Candidates(explicitHome string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return CandidateHomes(path, s.EnvVar, explicitHome, defaultHome)
+	return CandidateHomes(path, s.EnvVar, explicitRoot, defaultHome)
 }

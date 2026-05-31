@@ -4,22 +4,22 @@ import "path/filepath"
 
 //
 // ────────────────────────────────────────
-// home path helpers.
+// root path helpers.
 //
 
-// Home resolves paths under one service home root.
+// Home resolves paths under one service root directory.
 type Home struct {
 	root   string
 	layout *Layout
 }
 
-// Root returns the service home directory.
+// Root returns the service root directory.
 func (h *Home) Root() string { return h.root }
 
-// Runtime returns the runtime state directory under home (typically home/sessions).
+// Runtime returns the runtime state directory under root (typically root/sessions).
 func (h *Home) Runtime() string { return Sessions(h.root, h.layout) }
 
-// Join joins path elements directly under the home root.
+// Join joins path elements directly under the service root.
 func (h *Home) Join(elem ...string) string {
 	return filepath.Join(append([]string{h.root}, elem...)...)
 }

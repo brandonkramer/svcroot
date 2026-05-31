@@ -1,6 +1,12 @@
 # svcroot
 
-Service root directories, runtime file layout, project-root discovery, and known-instance registries
+Service instance roots, runtime file layout, project-root discovery, and known-instance registries for long-running local services.
+
+## Install
+
+```bash
+go get github.com/brandonkramer/svcroot
+```
 
 ## Configure once with Service
 
@@ -8,7 +14,7 @@ Service root directories, runtime file layout, project-root discovery, and known
 svc := &svcroot.Service{
     EnvVar:       "MYAPP_HOME",
     DefaultDir:   ".myapp",
-    RegistryFile: "sessions/known-homes.json", // optional
+    RegistryFile: "sessions/known-instances.json", // optional
     Layout: svcroot.Layout{
         SessionsDir: "sessions",
         SocketName:  "rpc.sock",
@@ -31,4 +37,11 @@ registry := h.RuntimeJoin("state.json")
 layout := &svcroot.DefaultLayout
 socket := svcroot.Socket(root, layout)
 lock := svcroot.Lock(root, layout)
+```
+
+## Development
+
+```bash
+make check          # race tests + linux compile + golangci-lint
+make install-hooks  # lefthook pre-commit/pre-push
 ```
