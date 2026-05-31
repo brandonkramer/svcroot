@@ -139,3 +139,26 @@ func mustDefaultHome(t *testing.T, dir string) string {
 	}
 	return got
 }
+
+func TestChannelUnix(t *testing.T) {
+	root := t.TempDir()
+	layout := DefaultLayout
+	got, err := ChannelUnix(root, &layout, ChannelRPC)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != Socket(root, &layout) {
+		t.Fatalf("rpc=%q want %q", got, Socket(root, &layout))
+	}
+	got, err = ChannelUnix(root, &layout, ChannelObserve)
+	if err != nil || got != ObserveSocket(root, &layout) {
+		t.Fatalf("observe=%q err=%v", got, err)
+	}
+	layoutNoObserve := Layout{SessionsDir: "sessions", SocketName: "rpc.sock", LockName: "lock", ObserveSocketName: ""}
+	if _, err := ChannelUnix(root, &layoutNoObserve, ChannelObserve); err != ErrChannelDisabled {
+		t.Fatalf("err=%v", err)
+	}
+	if _, err := ChannelUnix(root, &layout, Channel("other")); err == nil {
+		t.Fatal("expected unknown channel error")
+	}
+}
